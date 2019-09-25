@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Node {
+	int data;
+	struct Node* formerNode;
+	struct Node* nextNode;
+}node;
+
+typedef struct Stack {
+	node* head;
+}stack;
+
+stack* createStack() {
+	stack* newStack = (stack*)malloc(sizeof(stack));
+	newStack->head = NULL;
+}
+
+void eraseStack(stack* erasedStack) {
+	node* temp = erasedStack->head;
+	node* temp2;
+
+	while (temp->nextNode) {
+		temp = temp->nextNode;
+	}
+
+	while (temp2->formerNode) {
+		temp2 = temp->formerNode;
+		free(temp);
+		temp = temp2;
+	}
+
+	free(erasedStack);
+}
+
+void push(stack* selectedStack, int insertedData) {
+	if (selectedStack->head) {
+		node* end = selectedStack->head;
+		while (end->nextNode) {
+			end = end->nextNode;
+		}
+		node* temp = (node*)malloc(sizeof(node));
+		temp->data = insertedData;
+		end->nextNode = temp;
+		temp->formerNode = end;
+	}
+	else {
+		node* temp = (node*)malloc(sizeof(node));
+		selectedStack->head = temp;
+		temp->data = insertedData;
+		temp->nextNode = NULL;
+		temp->formerNode = NULL;
+	}
+}
+
+int pop(stack* selectedStack) {
+	if (selectedStack->head) {
+		node* temp = selectedStack->head;
+		while (temp->nextNode) {
+			temp = temp->nextNode;
+		}
+		int num = temp->data;
+		temp->formerNode->nextNode = NULL;
+		free(temp);
+		return num;
+	}
+	else {
+		printf("Stack is empty");
+		return 0;
+	}
+}
