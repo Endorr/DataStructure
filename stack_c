@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*###########################################################################################################################
+#I use two way linked list. It's a dynamic stack. There are two problems in this code (as far as I know).                   #
+#When you try to pop in an empty stack, they will notice you to stack is empty but it still gives you 0 to return number.   #
+#And in the push function, I didn't make code that notices heap is full.                                                    #
+#So If you want to use this code, you will make some extra code for those problems. Let me know if there is another problem.#
+#############################################################################################################################*/
+
 typedef struct Node {
 	int data;
 	struct Node* formerNode;
