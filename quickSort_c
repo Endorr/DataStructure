@@ -1,0 +1,45 @@
+void swap(char* str, int a, int b) {
+	char temp = str[a];
+	str[a] = str[b];
+	str[b] = temp;
+}
+
+void quickSort(char* str, int start, int end) {
+	int pivot = (start + end) / 2;
+	int st, en;
+	while (1) {
+		for (st=start; st < end; st++) {
+			if (str[st] > str[pivot])
+				break;
+		}
+		for (en=end; en > start; en--) {
+			if (str[en] < str[pivot]) {
+				break;
+			}
+		}
+		if (st < en) {
+			swap(str, st, en);
+		}
+		else {
+			break;
+		}
+	}
+	if (st > pivot) {
+		swap(str, en, pivot);
+		if (start < en - 1) {
+			quickSort(str, start, en - 1);
+		}
+		if (en+1 < end) {
+			quickSort(str, en, end);
+		}
+	}
+	else if (en < pivot) {
+		swap(str, st, pivot);
+		if (start < st-1) {
+			quickSort(str, start, st);
+		}
+		if (st + 1 < end) {
+			quickSort(str, st + 1, end);
+		}
+	}
+}
