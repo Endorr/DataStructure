@@ -1,0 +1,71 @@
+#include "stdafx.h"
+
+typedef struct Node {
+	int value;
+	int hValue;
+	struct Node* lNode;
+	struct Node* rNode;
+}node;
+
+typedef struct Tree {
+	node* head;
+}tree;
+
+node* createNode(int value) {
+	node* temp = (node*)malloc(sizeof(node));
+	temp->value = value;
+	temp->lNode = NULL;
+	temp->rNode = NULL;
+	return temp;
+}
+
+tree* createTree() {
+	tree* temp = (tree*)malloc(sizeof(tree));
+	temp->head = NULL;
+	return temp;
+}
+
+int calculHeight(node* temp) {
+	if (!temp->lNode && !temp->rNode)
+		return 0;
+	else if (!temp->lNode)
+		return -1 * temp->rNode->hValue;
+	else if (!temp->rNode)
+		return temp->lNode->hValue;
+	else
+		return temp->lNode->hValue - temp->rNode->hValue;
+}
+
+void calculTreeHeight(node* Node) {
+	if (!Node) {
+		return;
+	}
+	calculTreeHeight(Node->lNode);
+	calculTreeHeight(Node->rNode);
+	Node->hValue = calculHeight(Node);
+}
+
+node* findParent(node* head,node* Node) {
+	if (head->value > Node->value)
+		return findParent(head->lNode, Node);
+	else if (head->value < Node->value)
+		return findParent(head->rNode, Node);
+	else if(head->lNode->value==Node->value||head->rNode->value==Node->value)
+		return head;
+	else {
+		return NULL;
+	}
+}
+
+void rrRotate(tree* Tree,node* Node) {
+	node* parent = findParent(Tree->head, Node);
+	node* temp=Node->rNode;
+	Node->rNode = temp->lNode;
+	temp->lNode = Node;
+}
+
+int main()
+{
+    return 0;
+}
+
