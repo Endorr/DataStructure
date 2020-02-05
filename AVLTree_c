@@ -25,6 +25,12 @@ tree* createTree() {
 	return temp;
 }
 
+void insertNodeToTree(tree* Tree, int value) {
+	if (!Tree->head)
+		Tree->head = createNode(value);
+	//else
+}
+
 int calculHeight(node* temp) {
 	if (!temp->lNode && !temp->rNode)
 		return 0;
@@ -62,6 +68,31 @@ void rrRotate(tree* Tree,node* Node) {
 	node* temp=Node->rNode;
 	Node->rNode = temp->lNode;
 	temp->lNode = Node;
+	if (parent->value > Node->value)
+		parent->lNode = temp;
+	else
+		parent->rNode = temp;
+}
+
+void llRotate(tree* Tree, node* Node) {
+	node* parent = findParent(Tree->head, Node);
+	node* temp = Node->lNode;
+	Node->lNode = temp->rNode;
+	temp->rNode = Node;
+	if (parent->value > Node->value)
+		parent->lNode = temp;
+	else
+		parent->rNode = temp;
+}
+
+void lrRotate(tree* Tree, node* Node) {
+	rrRotate(Tree, Node->lNode);
+	llRotate(Tree, Node);
+}
+
+void rlRotate(tree* Tree, node* Node) {
+	llRotate(Tree, Node->rNode);
+	rrRotate(Tree, Node);
 }
 
 int main()
