@@ -1,6 +1,3 @@
-/*현재 반례있고 수정중!!!!*/
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -24,7 +21,7 @@ typedef struct List {//랜덤값 투입시 중복 검사를 위한 링크드 리
 
 node* createNode(int); //임의의 노드 생성
 tree* createTree(); //임의의 트리 생성
-void insertNodeToTree(tree*,node*, int); //트리에 노드 삽입
+void insertNodeToTree(tree*, node*, int); //트리에 노드 삽입
 int getTreeHeight(node* Node); //트리의 높이를 계산하는 함수
 int calculValanceFactor(node*); //각 노드의 균형인수 계산
 void calculTreeVF(tree*, node*); //트리의 균형을 자동으로 맞춰주는 함수
@@ -42,55 +39,64 @@ int main()
 	srand((unsigned int)time(NULL));
 	int tryNum;
 
-	printf("트리의 노드 갯수");
-	scanf_s("%d", &tryNum);
+	while (1) {
+		printf("트리의 노드 갯수");
+		scanf_s("%d", &tryNum);
 
-	tree* Tree = createTree();
-	list* link = NULL;
-	for (int i = 0; i < tryNum; i++) {
-		int num;
+		if (tryNum <= 0)
+			break;
 
-		//자동 랜덤 입력(중복X) 수동 입력시 수동 입력란 전까지 주석처리하세요
-		num = rand() % 100 + 1;
-		if (link == NULL) {
-			list* temp = (list*)malloc(sizeof(list));
-			temp->data = num;
-			temp->nextItem = NULL;
-			link = temp;
-		}
-		else {
-			list* temp = link;
-			while (temp->nextItem != NULL) {
-				if (temp->data == num) {
-					num = rand() % 100 + 1;
-					temp = link;
-				}
-				else {
-					temp = temp->nextItem;
-				}
+		tree* Tree = createTree();
+		list* link = NULL;
+		for (int i = 0; i < tryNum; i++) {
+			int num;
+
+			//자동 랜덤 입력(중복X) 수동 입력시 수동 입력란 전까지 주석처리하세요
+			num = rand() % 100 + 1;
+			if (link == NULL) {
+				list* temp = (list*)malloc(sizeof(list));
+				temp->data = num;
+				temp->nextItem = NULL;
+				link = temp;
 			}
-			list* temp2 = (list*)malloc(sizeof(list));
-			temp2->data = num;
-			temp2->nextItem = NULL;
-			temp->nextItem = temp2;
+			else {
+				list* temp = link;
+				while (temp->nextItem != NULL) {
+					if (temp->data == num) {
+						num = rand() % 100 + 1;
+						temp = link;
+					}
+					else {
+						temp = temp->nextItem;
+					}
+				}
+				list* temp2 = (list*)malloc(sizeof(list));
+				temp2->data = num;
+				temp2->nextItem = NULL;
+				temp->nextItem = temp2;
+			}
+			printf("\n%d번째 노드 숫자 입력: %d", i + 1, num);
+
+			//수동 입력(중복X) 자동입력시 아래 두 줄 주석처리하세요.
+			//printf("\n%d번째 노드 숫자 입력: ", i + 1);
+			//scanf_s("%d", &num);
+
+			insertNodeToTree(Tree, Tree->head, num);
 		}
-		printf("\n%d번째 노드 숫자 입력: %d", i + 1, num);
 
-		//수동 입력(중복X) 자동입력시 아래 두 줄 주석처리하세요.
-		//printf("\n%d번째 노드 숫자 입력: ", i + 1);
-		//scanf_s("%d", &num);
+		printf("\n입력된 트리를 전위 정렬로 출력합니다.\n\n");
+		showTree(Tree->head);
 
-		insertNodeToTree(Tree,Tree->head, num);
+		printf("\n\nAVL 검사 실행? (Y/N)\n");
+		char YN;
+		getchar();
+		scanf_s("%c", &YN);
+		calculTreeVF(Tree, Tree->head);
+
+		printf("\nAVL 연산 결과 트리를 전위 정렬로 출력합니다.\n");
+		showTree(Tree->head);
+		printf("\n");
 	}
-
-	printf("\n입력된 트리를 전위 정렬로 출력합니다.\n\n");
-	showTree(Tree->head);
-
-	printf("\n\nAVL 검사 실행\n");
-	calculTreeVF(Tree, Tree->head);
-
-	printf("\nAVL 연산 결과 트리를 전위 정렬로 출력합니다.\n");
-	showTree(Tree->head);
 	return 0;
 }
 
@@ -109,24 +115,24 @@ tree* createTree() {
 	return temp;
 }
 
-void insertNodeToTree(tree* Tree,node* head, int value) {
-	if (Tree->head==NULL)
+void insertNodeToTree(tree* Tree, node* head, int value) {
+	if (Tree->head == NULL)
 		Tree->head = createNode(value);
 	else {
 		if (head->value >= value) {
-			if (head->lNode!=NULL)
-				insertNodeToTree(Tree,head->lNode, value);
+			if (head->lNode != NULL)
+				insertNodeToTree(Tree, head->lNode, value);
 			else
 				head->lNode = createNode(value);
 		}
 		else {
-			if (head->rNode!=NULL)
-				insertNodeToTree(Tree,head->rNode, value);
-			else 
+			if (head->rNode != NULL)
+				insertNodeToTree(Tree, head->rNode, value);
+			else
 				head->rNode = createNode(value);
 		}
 	}
-	
+
 }
 
 int getTreeHeight(node* Node) {
@@ -148,19 +154,19 @@ int calculValanceFactor(node* temp) {
 		return -1 * (getTreeHeight(temp->rNode));
 	else if (temp->rNode == NULL)
 		return getTreeHeight(temp->lNode);
-	else 
+	else
 		return getTreeHeight(temp->lNode) - getTreeHeight(temp->rNode);
 }
 
-void calculTreeVF(tree* Tree,node* head) {
-	if (head==NULL)
+void calculTreeVF(tree* Tree, node* head) {
+	if (head == NULL)
 		return;
 
-	calculTreeVF(Tree,head->lNode);
-	calculTreeVF(Tree,head->rNode);
+	calculTreeVF(Tree, head->lNode);
+	calculTreeVF(Tree, head->rNode);
 	head->hValue = calculValanceFactor(head);
 
-	printf("\n%d의 균형인수: %d", head->value, head->hValue); //균형 인수를 계산할 때마다 출력 (확인용)
+	printf("\nNode Value->%d의 균형인수: %d", head->value, head->hValue); //균형 인수를 계산할 때마다 출력 (확인용)
 
 	if (head->hValue >= 2) {
 		if (head->lNode->lNode == NULL) {
@@ -168,20 +174,32 @@ void calculTreeVF(tree* Tree,node* head) {
 			lrRotate(Tree, head);
 		}
 		else {
-			printf("\nLL회전 실행\n");
-			llRotate(Tree, head);
+			if (getTreeHeight(head->lNode->lNode) >= getTreeHeight(head->lNode->rNode)) {
+				printf("\nLL회전 실행\n");
+				llRotate(Tree, head);
+			}
+			else {
+				printf("\nLR회전 실행\n");
+				lrRotate(Tree, head);
+			}
 		}
 
 		calculTreeVF(Tree, Tree->head); //회전 후 전체 트리에 대해 균형인수 계산을 다시 수행
 	}
 	else if (head->hValue <= -2) {
-		if (head->rNode->rNode == NULL) {//단순히 무조건 RR회전을 시키는 게 아니라 서브트리의 높이중 높은 것을 기준으로 회전시켜야 한다.
+		if (head->rNode->rNode == NULL) {
 			printf("\nRL회전 실행\n");
 			rlRotate(Tree, head);
 		}
 		else {
-			printf("\nRR회전 실행\n");
-			rrRotate(Tree, head);
+			if (getTreeHeight(head->rNode->rNode) >= getTreeHeight(head->rNode->lNode)) {
+				printf("\nRR회전 실행\n");
+				rrRotate(Tree, head);
+			}
+			else {
+				printf("\nRL회전 실행\n");
+				rlRotate(Tree, head);
+			}
 		}
 		calculTreeVF(Tree, Tree->head); //회전 후 전체 트리에 대해 균형인수 계산을 다시 수행
 	}
@@ -197,7 +215,7 @@ node* findParent(node* head, node* Node) {
 			printf("\n트리에 없는 노드!\n");
 			return NULL;
 		}
-		else if (head->rNode->value==Node->value)
+		else if (head->rNode->value == Node->value)
 			return head;
 		else
 			return findParent(head->rNode, Node);
@@ -218,10 +236,10 @@ void rrRotate(tree* Tree, node* Node) {
 
 	node* parent = findParent(Tree->head, Node);
 	node* temp = Node->rNode;
-	
+
 	Node->rNode = temp->lNode;
 	temp->lNode = Node;
-	
+
 	if (parent != NULL) {
 		if (parent->value >= Node->value)
 			parent->lNode = temp;
@@ -233,13 +251,13 @@ void rrRotate(tree* Tree, node* Node) {
 }
 
 void llRotate(tree* Tree, node* Node) {
-	
+
 	node* parent = findParent(Tree->head, Node);
 	node* temp = Node->lNode;
-	
+
 	Node->lNode = temp->rNode;
 	temp->rNode = Node;
-	
+
 	if (parent != NULL) {
 		if (parent->value >= Node->value)
 			parent->lNode = temp;
@@ -261,10 +279,10 @@ void rlRotate(tree* Tree, node* Node) {
 }
 
 void showTree(node* head) {
-	
-	if (head==NULL) 
+
+	if (head == NULL)
 		return;
-	
+
 	printf(" @%d@ ", head->value);
 	showTree(head->lNode);
 	showTree(head->rNode);
@@ -274,7 +292,7 @@ void calculListLength(list* linkedList) {
 
 	list* temp = linkedList;
 	int i = 0;
-	
+
 	while (temp != NULL) {
 		temp = temp->nextItem;
 		i++;
