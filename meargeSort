@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void showArr(int*, int);
+
+void swap(int*, int*);
+
+void merge(int*,int, int, int, int);
+
+void mergeSort(int*, int);
+
+int main() {
+
+	int size;
+	int* arr;
+
+	printf("배열의 크기 입력: ");
+	scanf_s("%d", &size);
+
+	arr = (int*)malloc(sizeof(int)*size);
+	for (int i = 0; i < size; i++) {
+		printf("%d번째 원소 입력: ",i + 1);
+		scanf_s("%d", &arr[i]);
+	}
+	
+	printf("입력한 배열\n");
+	showArr(arr, size);
+
+	printf("\n\n병합을 시작합니다.\n");
+	mergeSort(arr, size);
+	return 0;
+}
+
+void showArr(int* arr, int size) {
+	for (int i = 0; i < size; i++)
+		printf("|%d |", arr[i]);
+}
+
+void swap(int* num1, int* num2) {
+	int temp = *num1;
+	*num1 = *num2;
+	*num2 = temp;
+}
+
+void merge(int* arr, int size, int left,int middle, int right) {//left가 miidle까지로 짜자.
+	int* tempArr = (int*)malloc(sizeof(int)*size);
+	int index = 0;
+	for (index = 0; index < size; index++) {
+		if (left == middle + 1)
+			tempArr[index++] = arr[right++];
+		
+		if (right == size)
+			tempArr[index++] = arr[left++];
+		
+		if (arr[left] > arr[right]) {
+			tempArr[index++] = arr[right++];
+		}
+		else if (arr[left]<=arr[right]) {
+
+		}
+	}
+}
