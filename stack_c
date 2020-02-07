@@ -21,6 +21,7 @@ typedef struct Stack {
 stack* createStack() {
 	stack* newStack = (stack*)malloc(sizeof(stack));
 	newStack->head = NULL;
+	return newStack;
 }
 
 void eraseStack(stack* erasedStack) {
@@ -31,11 +32,11 @@ void eraseStack(stack* erasedStack) {
 		temp = temp->nextNode;
 	}
 
-	while (temp2->formerNode) {
+	do {
 		temp2 = temp->formerNode;
 		free(temp);
 		temp = temp2;
-	}
+	}while (temp2->formerNode)
 
 	free(erasedStack);
 }
@@ -48,6 +49,7 @@ void push(stack* selectedStack, int insertedData) {
 		}
 		node* temp = (node*)malloc(sizeof(node));
 		temp->data = insertedData;
+		temp->nextNode=NULL;
 		end->nextNode = temp;
 		temp->formerNode = end;
 	}
