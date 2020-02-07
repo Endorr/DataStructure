@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void showArr(int*, int);
+void showArr(int*, int,int);
 
 void swap(int*, int*);
 
-void merge(int*,int, int, int, int);
+void merge(int*, int, int, int, int);
 
-void mergeSort(int*, int);
+void mergeSort(int*, int, int, int);
 
 int main() {
 
@@ -19,21 +19,25 @@ int main() {
 
 	arr = (int*)malloc(sizeof(int)*size);
 	for (int i = 0; i < size; i++) {
-		printf("%d번째 원소 입력: ",i + 1);
+		printf("%d번째 원소 입력: ", i + 1);
 		scanf_s("%d", &arr[i]);
 	}
-	
+
 	printf("입력한 배열\n");
-	showArr(arr, size);
+	showArr(arr, size,0);
 
 	printf("\n\n병합을 시작합니다.\n");
-	mergeSort(arr, size);
+	mergeSort(arr, size,0,size-1);
+
+	printf("병합 결과");
+	showArr(arr,size,0);
 	return 0;
 }
 
-void showArr(int* arr, int size) {
-	for (int i = 0; i < size; i++)
+void showArr(int* arr, int size, int start) {
+	for (int i = start; i < start+size; i++)
 		printf("|%d |", arr[i]);
+	printf("\n===========================\n");
 }
 
 void swap(int* num1, int* num2) {
@@ -42,21 +46,56 @@ void swap(int* num1, int* num2) {
 	*num2 = temp;
 }
 
-void merge(int* arr, int size, int left,int middle, int right) {//left가 miidle까지로 짜자.
-	int* tempArr = (int*)malloc(sizeof(int)*size);
-	int index = 0;
-	for (index = 0; index < size; index++) {
-		if (left == middle + 1)
-			tempArr[index++] = arr[right++];
-		
-		if (right == size)
-			tempArr[index++] = arr[left++];
-		
-		if (arr[left] > arr[right]) {
-			tempArr[index++] = arr[right++];
-		}
-		else if (arr[left]<=arr[right]) {
+void merge(int* arr, int size, int left, int middle, int right) {//leftIndex가 miidle까지로 짜자.
 
+	int* tempArr = (int*)malloc(sizeof(int)*size);
+	int index = 0, leftIndex = left, rightIndex = middle+1;
+
+	if (size >2) {
+		for (index = 0; index < size; index++) {
+			if (leftIndex == middle + 1) {
+				tempArr[index] = arr[rightIndex];
+				rightIndex++;
+			}
+
+			else if (rightIndex == size) {
+				tempArr[index] = arr[leftIndex];
+				leftIndex++;
+			}
+
+			else if (arr[leftIndex] > arr[rightIndex]) {
+				tempArr[index] = arr[rightIndex];
+				rightIndex++;
+			}
+			else {
+				tempArr[index] = arr[leftIndex];
+				leftIndex++;
+			}
 		}
 	}
+	else if (size == 2) {
+		tempArr[index] = (arr[leftIndex] > arr[rightIndex]) ? arr[rightIndex] : arr[leftIndex];
+		index++;
+		tempArr[index] = (arr[leftIndex] < arr[rightIndex]) ? arr[rightIndex] : arr[leftIndex];
+	}
+	else {
+		tempArr[index] = arr[left];
+	}
+	if (size >= 2) {
+		for (index = 0; index < size; index++) {
+			arr[index + left] = tempArr[index];
+		}
+	}
+
+}
+
+void mergeSort(int* arr, int size, int start, int end) {
+	int middle = (start + end) / 2;
+	if (size>=2) {
+		mergeSort(arr, middle - start + 1, start, middle);
+		mergeSort(arr, end - middle, middle + 1, end);
+		merge(arr, size, start, middle, end);
+	}
+	else
+		merge(arr, size, start, middle, end);
 }
