@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <Windows.h>
 #include <time.h>
 
 typedef struct Node {//트리 노드 구조체
@@ -14,15 +15,14 @@ typedef struct Tree {//트리 구조체
 	node* head;
 }tree;
 
-typedef struct List {//랜덤값 투입시 중복 검사를 위한 링크드 리스트
-	int data;
-	struct List* nextItem;
-}list;
-
 node* createNode(int); //임의의 노드 생성
 tree* createTree(); //임의의 트리 생성
 void insertNodeToTree(tree*, node*, int); //트리에 노드 삽입
-int getTreeHeight(node* Node); //트리의 높이를 계산하는 함수
+node* findNode(node*, int);//트리에서 특정 값을 가진 노드를 찾아 리턴
+node* findSuccesor(tree*, int);//트리에서 특정 값을 가진 노드의 자리를 대신할 수 있는노드 리턴
+void eraseNodeFromTree(tree*, int);//트리에서 특정 값을 가진 노드를 삭제
+void eraseAllNodes(tree*, node*);//모든 노드와 트리를 삭제
+int getTreeHeight(node*); //트리의 높이를 계산하는 함수
 int calculValanceFactor(node*); //각 노드의 균형인수 계산
 void calculTreeVF(tree*, node*); //트리의 균형을 자동으로 맞춰주는 함수
 node* findParent(node*, node*); //특정 노드의 부모 노드를 찾는 함수
@@ -30,73 +30,257 @@ void rrRotate(tree*, node*); //RR 회전 연산
 void llRotate(tree*, node*); //LL 회전 연산
 void lrRotate(tree*, node*); //LR 회전 연산
 void rlRotate(tree*, node*); //RL 회전 연산
-void showTree(node*); //전체 트리를 전위 연산으로 출력
-void calculListLength(list*); //중복 값 방지 링크드 리스트의 길이를 계산하는 함수
+void showTree_Preorder(node*); //전체 트리를 전위 순회로 출력
+void showTree_Inorder(node*); //전체 트리를 중위 순회로 출력
+void showTree_Postorder(node*); //전체 트리를 후위 순회로 출력
 
 
 int main()
 {
+
+	printf("##################\n");
+	printf("#    AVL Tree    #\n");
+	printf("##################\n");
+	getchar();
+
+	int power = 1;
 	srand((unsigned int)time(NULL));
-	int tryNum;
+	tree* Tree = createTree();
 
-	while (1) {
-		printf("트리의 노드 갯수");
-		scanf_s("%d", &tryNum);
+	while (power) {
 
-		if (tryNum <= 0)
-			break;
+		int mode;
+		int num;
 
-		tree* Tree = createTree();
-		list* link = NULL;
-		for (int i = 0; i < tryNum; i++) {
-			int num;
+		system("cls");
+		printf("##################\n");
+		printf("#  Choose Mode   #\n");
+		printf("##################\n");
 
-			//자동 랜덤 입력(중복X) 수동 입력시 수동 입력란 전까지 주석처리하세요
-			num = rand() % 100 + 1;
-			if (link == NULL) {
-				list* temp = (list*)malloc(sizeof(list));
-				temp->data = num;
-				temp->nextItem = NULL;
-				link = temp;
-			}
-			else {
-				list* temp = link;
-				while (temp->nextItem != NULL) {
-					if (temp->data == num) {
-						num = rand() % 100 + 1;
-						temp = link;
-					}
-					else {
-						temp = temp->nextItem;
-					}
+		printf("\n##################\n");
+		printf("#1. Make New Tree#\n");
+		printf("##################\n");
+
+		printf("\n##################\n");
+		printf("#2. Insert Node  #\n");
+		printf("##################\n");
+
+		printf("\n##################\n");
+		printf("#3. Delete Node  #\n");
+		printf("##################\n");
+
+		printf("\n##################\n");
+		printf("#4.  Show Tree   #\n");
+		printf("##################\n");
+
+		printf("\n##################\n");
+		printf("#5.    Exit      #\n");
+		printf("##################\n");
+
+		scanf_s("%d", &mode);
+
+		switch (mode) {
+			case 1:
+				system("cls");
+				printf("##########################\n");
+				printf("# !Existing Tree Erased! #\n");
+				printf("# Are You Sure? (Y:1/N:0)#\n");
+				printf("##########################\n");
+				mode = 0;
+				scanf_s("%d", &mode);
+				switch (mode) {
+					case 1:
+						system("cls");
+						eraseAllNodes(Tree, Tree->head);
+						printf("##########################\n");
+						printf("#      Tree Erased       #\n");
+						printf("##########################\n");
+
+						printf("\n#########################\n");
+						printf("# A Tree Has Been Built  #\n");
+						printf("##########################\n");
+						Tree = createTree();
+						getchar();
+						getchar();
+						break;
+					default:
+						break;
 				}
-				list* temp2 = (list*)malloc(sizeof(list));
-				temp2->data = num;
-				temp2->nextItem = NULL;
-				temp->nextItem = temp2;
-			}
-			printf("\n%d번째 노드 숫자 입력: %d", i + 1, num);
+				break;
+			case 2:
+				system("cls");
+				printf("##############################\n");
+				printf("# Choose Node Insert Method  #\n");
+				printf("#    (0: Auto 1: Manual)     #\n");
+				printf("##############################\n");
 
-			//수동 입력(중복X) 자동입력시 아래 두 줄 주석처리하세요.
-			//printf("\n%d번째 노드 숫자 입력: ", i + 1);
-			//scanf_s("%d", &num);
+				mode = 0;
+				scanf_s("%d",&mode);
 
-			insertNodeToTree(Tree, Tree->head, num);
+				switch (mode) {
+					case 1:
+						while (1) {
+							system("cls");
+							printf("########################\n");
+							printf("#  Insert Node Value   #\n");
+							printf("########################\n");
+							scanf_s("%d", &num);
+							getchar();
+							if (findNode(Tree->head, num) == NULL) {
+								insertNodeToTree(Tree, Tree->head, num);
+								calculTreeVF(Tree, Tree->head);
+
+								printf("\n########################\n");
+								printf("#    Node Inserted     #\n");
+								printf("#Insert Again?(Y:1/N:0)#\n");
+								printf("########################\n");
+
+								mode = 0;
+								scanf_s("%d", &mode);
+								if(mode!=1)
+									break;
+							}
+							else {
+								printf("\n########################\n");
+								printf("#    Duplicate Data    #\n");
+								printf("#  Try Another Value   #\n");
+								printf("########################\n");
+								getchar();
+								getchar();
+							}
+						}
+						break;
+					case 0:
+						system("cls");
+						printf("#####################################\n");
+						printf("#       Auto Insert Node Value      #\n");
+						printf("#   Determine The Number Of Nodes   #\n");
+						printf("#####################################\n");
+						mode = 0;
+						scanf_s("%d",&mode);
+						getchar();
+
+						for (int i = 0; i < mode; i++) {
+							do {
+								num = rand() % 1000 + 1;
+							} while (findNode(Tree->head, num) != NULL);
+							insertNodeToTree(Tree, Tree->head, num);
+							calculTreeVF(Tree, Tree->head);
+						}
+						printf("\n\n########################\n");
+						printf("#    Node Inserted     #\n");
+						printf("########################\n");
+						getchar();
+						break;
+					default:
+						printf("########################\n");
+						printf("#None Of Option...Retry#\n");
+						printf("########################\n");
+						getchar();
+						getchar();
+						break;
+				}
+				
+				break;
+			case 3:
+				system("cls");
+				printf("###################\n");
+				printf("# Type Node Value #\n");
+				printf("###################\n");
+
+				num = 0;
+				scanf_s("%d", &num);
+				if (findNode(Tree->head, num) == NULL) {
+					printf("\n########################\n");
+					printf("#Invalid Value... Retry#\n");
+					printf("########################\n");
+				}
+				else {
+					eraseNodeFromTree(Tree, num);
+					printf("\n#############\n");
+					printf("#Node Erased#\n");
+					printf("#############\n");
+				}
+				getchar();
+				getchar();
+				break;
+			case 4:
+				system("cls");
+				printf("########################\n");
+				printf("# Choose Rotation Way  #\n");
+				printf("########################\n");
+
+				printf("\n########################\n");
+				printf("#     1. Preorder      #\n");
+				printf("########################\n");
+
+				printf("\n########################\n");
+				printf("#      2. Inorder      #\n");
+				printf("########################\n");
+
+				printf("\n########################\n");
+				printf("#     3. Postorder     #\n");
+				printf("########################\n");
+
+				mode = 0;
+				scanf_s("%d", &mode);
+
+				switch (mode) {
+					system("cls");
+					case 1:
+						if (Tree->head != NULL) {
+							showTree_Preorder(Tree->head);
+						}
+						else {
+							printf("############\n");
+							printf("#Empty Tree#\n");
+							printf("############\n");
+						}
+						break;
+					case 2:
+						if (Tree->head != NULL) {
+							showTree_Inorder(Tree->head);
+						}
+						else {
+							printf("############\n");
+							printf("#Empty Tree#\n");
+							printf("############\n");
+						}
+						break;
+					case 3:
+						if (Tree->head != NULL) {
+							showTree_Postorder(Tree->head);
+						}
+						else {
+							printf("############\n");
+							printf("#Empty Tree#\n");
+							printf("############\n");
+						}
+						break;
+					default:
+						printf("########################\n");
+						printf("#None Of Option...Retry#\n");
+						printf("########################\n");
+						break;
+				}
+				getchar();
+				getchar();
+				break;
+			case 5:
+				power = 0;
+				break;
+			default:
+				system("cls");
+				printf("########################\n");
+				printf("#None Of Option...Retry#\n");
+				printf("########################\n");
+				getchar();
+				getchar();
+				break;
 		}
 
-		printf("\n입력된 트리를 전위 정렬로 출력합니다.\n\n");
-		showTree(Tree->head);
-
-		printf("\n\nAVL 검사 실행? (Y/N)\n");
-		char YN;
-		getchar();
-		scanf_s("%c", &YN);
-		calculTreeVF(Tree, Tree->head);
-
-		printf("\nAVL 연산 결과 트리를 전위 정렬로 출력합니다.\n");
-		showTree(Tree->head);
-		printf("\n");
 	}
+
 	return 0;
 }
 
@@ -135,6 +319,148 @@ void insertNodeToTree(tree* Tree, node* head, int value) {
 
 }
 
+node* findNode(node* head, int value) {
+	if (head == NULL) {
+		return NULL;
+	}
+	if (head->value > value) {
+		if (head->lNode == NULL)
+			return NULL;
+		else
+			return findNode(head->lNode, value);
+	}
+	else if (head->value < value) {
+		if (head->rNode == NULL)
+			return NULL;
+		else
+			return findNode(head->rNode, value);
+	}
+	else {
+		return head;
+	}
+}
+
+node* findSuccesor(tree* Tree, int value) {
+	node* target = findNode(Tree->head, value);
+	node* succesor;
+
+	if (target->lNode == NULL&&target->rNode == NULL)
+		return NULL;
+	else if (target->lNode == NULL) {
+		succesor = target->rNode;
+		while (succesor->lNode != NULL)
+			succesor = succesor->lNode;
+		return succesor;
+	}
+	else if (target->rNode == NULL) {
+		succesor = target->lNode;
+		while (succesor->rNode != NULL)
+			succesor = succesor->rNode;
+		return succesor;
+	}
+	else {
+		if (getTreeHeight(target->lNode) >= getTreeHeight(target->rNode)) {
+			succesor = target->lNode;
+			while (succesor->rNode != NULL)
+				succesor = succesor->rNode;
+			return succesor;
+		}
+		else {
+			succesor = target->rNode;
+			while (succesor->lNode != NULL)
+				succesor = succesor->lNode;
+			return succesor;
+		}
+	}
+}
+
+void eraseNodeFromTree(tree* Tree, int value) {
+	if (findNode(Tree->head, value) == NULL) {
+		printf("\n###############################\n");
+		printf("#There Is No Such Value In Tree#\n");
+		printf("#         Plaese Retry         #\n");
+		printf("###############################\n");
+		return;
+	}
+	else {
+		node* target = findNode(Tree->head, value);
+		node* succesor = findSuccesor(Tree, value);
+		node* targetParent;
+		node* succesorParent;
+		if (succesor == NULL) {
+			targetParent = findParent(Tree->head, target);
+			if (targetParent == NULL) {
+				free(target);
+				Tree->head = NULL;
+				return;
+			}
+			else {
+				if (target->value > targetParent->value)
+					targetParent->rNode = NULL;
+				else
+					targetParent->lNode = NULL;
+				free(target);
+				return;
+			}
+		}
+		else {
+			targetParent = findParent(Tree->head, target);
+			succesorParent = findParent(Tree->head, succesor);
+			if (succesor->lNode == NULL&&succesor->rNode == NULL) {
+				if (succesor->value == succesorParent->lNode->value)
+					succesorParent->lNode = NULL;
+				else
+					succesorParent->rNode = NULL;
+			}
+			else if (succesor->lNode == NULL)
+				succesorParent->lNode = succesor->rNode;
+			else if (succesor->rNode == NULL)
+				succesorParent->rNode = succesor->lNode;
+
+			if (targetParent != NULL) {
+				if (target->value == targetParent->lNode->value)
+					targetParent->lNode = succesor;
+				else
+					targetParent->rNode = succesor;
+			}
+			else
+				Tree->head = succesor;
+			succesor->lNode = target->lNode;
+			succesor->rNode = target->rNode;
+			free(target);
+		}
+
+	}
+
+	calculTreeVF(Tree, Tree->head);
+}
+
+void eraseAllNodes(tree* Tree, node* head) {
+	printf("111\n");
+	if (Tree->head == NULL)
+		return;
+	if (head == NULL) {
+		return;
+	}
+	else if (head->lNode != NULL || head->rNode != NULL) {
+		eraseAllNodes(Tree, head->lNode);
+		eraseAllNodes(Tree, head->rNode);
+		eraseAllNodes(Tree, head);
+	}
+	else {
+		node* temp = findParent(Tree->head,head);
+		if (temp == NULL)
+			Tree->head = NULL;
+		else {
+			if (temp->value > head->value)
+				head->rNode = NULL;
+			else
+				head->lNode = NULL;
+		}
+		free(head);
+	}
+}
+
 int getTreeHeight(node* Node) {
 	if (Node == NULL)
 		return 0;
@@ -166,20 +492,20 @@ void calculTreeVF(tree* Tree, node* head) {
 	calculTreeVF(Tree, head->rNode);
 	head->hValue = calculValanceFactor(head);
 
-	printf("\nNode Value->%d의 균형인수: %d", head->value, head->hValue); //균형 인수를 계산할 때마다 출력 (확인용)
+	printf("\nNode Value->%d's Valance Factor: %d", head->value, head->hValue); //균형 인수를 계산할 때마다 출력 (확인용)
 
 	if (head->hValue >= 2) {
 		if (head->lNode->lNode == NULL) {
-			printf("\nLR회전 실행\n");
+			printf("\nLR Rotate\n");
 			lrRotate(Tree, head);
 		}
 		else {
 			if (getTreeHeight(head->lNode->lNode) >= getTreeHeight(head->lNode->rNode)) {
-				printf("\nLL회전 실행\n");
+				printf("\nLL Rotate\n");
 				llRotate(Tree, head);
 			}
 			else {
-				printf("\nLR회전 실행\n");
+				printf("\nLR Rotate\n");
 				lrRotate(Tree, head);
 			}
 		}
@@ -188,16 +514,16 @@ void calculTreeVF(tree* Tree, node* head) {
 	}
 	else if (head->hValue <= -2) {
 		if (head->rNode->rNode == NULL) {
-			printf("\nRL회전 실행\n");
+			printf("\nRL Rotate\n");
 			rlRotate(Tree, head);
 		}
 		else {
 			if (getTreeHeight(head->rNode->rNode) >= getTreeHeight(head->rNode->lNode)) {
-				printf("\nRR회전 실행\n");
+				printf("\nRR Rotate\n");
 				rrRotate(Tree, head);
 			}
 			else {
-				printf("\nRL회전 실행\n");
+				printf("\nRL Rotate\n");
 				rlRotate(Tree, head);
 			}
 		}
@@ -206,13 +532,14 @@ void calculTreeVF(tree* Tree, node* head) {
 }
 
 node* findParent(node* head, node* Node) {
-	if (head->value == Node->value) {
-		printf("\n헤드 노드라 부모 노드가 없음\n");
+	if (head->value == Node->value)
 		return NULL;
-	}
-	else if (head->value<Node->value) {
+	else if (head->value < Node->value) {
 		if (head->rNode == NULL) {
-			printf("\n트리에 없는 노드!\n");
+			printf("\n###############################\n");
+			printf("#There Is No Such Value In Tree#\n");
+			printf("#         Plaese Retry         #\n");
+			printf("###############################\n");
 			return NULL;
 		}
 		else if (head->rNode->value == Node->value)
@@ -222,7 +549,10 @@ node* findParent(node* head, node* Node) {
 	}
 	else {
 		if (head->lNode == NULL) {
-			printf("\n트리에 없는 노드!\n");
+			printf("\n###############################\n");
+			printf("#There Is No Such Value In Tree#\n");
+			printf("#         Plaese Retry         #\n");
+			printf("###############################\n");
 			return NULL;
 		}
 		else if (head->lNode->value == Node->value)
@@ -278,24 +608,26 @@ void rlRotate(tree* Tree, node* Node) {
 	rrRotate(Tree, Node);
 }
 
-void showTree(node* head) {
-
+void showTree_Preorder(node* head) {
 	if (head == NULL)
 		return;
-
 	printf(" @%d@ ", head->value);
-	showTree(head->lNode);
-	showTree(head->rNode);
+	showTree_Preorder(head->lNode);
+	showTree_Preorder(head->rNode);
 }
 
-void calculListLength(list* linkedList) {
-
-	list* temp = linkedList;
-	int i = 0;
-
-	while (temp != NULL) {
-		temp = temp->nextItem;
-		i++;
-	}
+void showTree_Inorder(node* head) {
+	if (head == NULL)
+		return;
+	showTree_Inorder(head->lNode);
+	printf(" @%d@ ", head->value);
+	showTree_Inorder(head->rNode);
 }
 
+void showTree_Postorder(node* head) {
+	if (head == NULL)
+		return;
+	showTree_Postorder(head->lNode);
+	showTree_Postorder(head->rNode);
+	printf(" @%d@ ", head->value);
+}
