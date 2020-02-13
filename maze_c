@@ -1,0 +1,238 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct room {
+	int roomMap[3][3]; //방의 벽 정보를 시각적으로 표시. 0이면 벽이 내려가 있는 상태를, 1이면 올라가 있는 상태를 뜻한다.
+
+	int roomX;//방위 위치 정보
+	int roomY;
+
+	int isVisit; //방을 방문했는지 여부
+
+	room* northRoom; //인접한 방을 가리키는 포인터
+	room* eastRoom;
+	room* southRoom;
+	room* westRoom;
+}Room;
+
+typedef struct maze {
+	int size;
+	
+	int* visitTable;
+	
+	Room* roomArray;
+}Maze;
+
+Maze* makeEmptyMaze(int size) { //size=미로의 한 변의 크기
+
+	Maze* temp = (Maze*)malloc(sizeof(Maze)); //maze 구조체 변수 공간 동적 할당
+	
+	Room* roomPtr; //현재 위치를 표시할 지역변수 roomPtr선언
+	
+	temp->size = size; //maze 구조체 변수 temp의 멤버 변수 저장.
+	temp->roomArray = (Room*)malloc(sizeof(Room)*size*size); //미로 크기만큼 방 구조체 변수 공간 동적 할당
+	temp->visitTable = (int*)malloc(sizeof(int)*size*size);
+
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
+			*(temp->visitTable + i*size + j) = 0;
+		}
+	}
+	
+	for (int i = 0; i < size; ++i) {
+		for (int j = 0; j < size; ++j) {
+			roomPtr = temp->roomArray+i*size + j;//현재 위치
+
+			roomPtr->roomX = i; //좌표 정보 설정  xy 거꾸로 했다. 헷갈리지 말자.
+			roomPtr->roomY = j;
+			
+			roomPtr->roomMap[0][0] = 1; //맵 정보 설정
+			roomPtr->roomMap[0][1] = 1;
+			roomPtr->roomMap[0][2] = 1;
+			roomPtr->roomMap[1][0] = 1;
+			roomPtr->roomMap[1][1] = 0;
+			roomPtr->roomMap[1][2] = 1;
+			roomPtr->roomMap[2][0] = 1;
+			roomPtr->roomMap[2][1] = 1;
+			roomPtr->roomMap[2][2] = 1;
+			
+			if (roomPtr->roomX != 0) //각각의 방 포인터로 연결. 외곽일 경우 NULL
+				roomPtr->northRoom = roomPtr - size;
+			else
+				roomPtr->northRoom = NULL;
+
+			if (roomPtr->roomX != size - 1)
+				roomPtr->southRoom = roomPtr + size;
+			else
+				roomPtr->southRoom = NULL;
+
+			if (roomPtr->roomY != 0)
+				roomPtr->westRoom = roomPtr - 1;
+			else
+				roomPtr->westRoom = NULL;
+
+			if (roomPtr->roomY != size - 1)
+				roomPtr->eastRoom = roomPtr + 1;
+			else
+				roomPtr->eastRoom = NULL;
+
+			roomPtr->isVisit = 0; //현재 위치 미방문으로 표시
+		}
+	}
+	return temp;
+}
+
+void print(int i) {
+	if (i == 0)
+		printf("□");
+	else if (i == 1)
+		printf("■");
+}
+
+void printMap(Maze* maze) {
+	
+	Room* temp;
+
+	for (int i = 0; i < maze->size; ++i) {
+		for (int j = 0; j < maze->size; ++j) {
+			temp = maze->roomArray + i * maze->size + j;
+			
+			print(temp->roomMap[0][0]);
+			print(temp->roomMap[0][1]);
+			if (j == maze->size - 1)
+				print(temp->roomMap[0][2]);
+		}
+		printf("\n");
+
+		for (int j = 0; j < maze->size; ++j) {
+			temp = maze->roomArray + i * maze->size + j;
+
+			print(temp->roomMap[1][0]);
+			print(temp->roomMap[1][1]);
+			if (j == maze->size - 1)
+				print(temp->roomMap[1][2]);
+		}
+		printf("\n");
+
+		if (i == maze->size - 1) {
+			for (int j = 0; j < maze->size; ++j) {
+				temp = maze->roomArray + i * maze->size + j;
+
+				print(temp->roomMap[2][0]);
+				print(temp->roomMap[2][1]);
+				if(j==maze->size-1)
+					print(temp->roomMap[2][2]);
+			}
+			printf("\n");
+		}
+	}
+}
+
+bool checkDirection(Room* room,int direction) {
+	switch (direction) {
+		
+		case 0:
+			if (room->northRoom != NULL&&room->northRoom->isVisit == 0)
+				return true;
+			else
+				return false;
+
+		case 1:
+			if (room->eastRoom != NULL&&room->eastRoom->isVisit == 0)
+				return true;
+			else
+				return false;
+
+		case 2:
+			if (room->southRoom != NULL&&room->southRoom->isVisit == 0)
+				return true;
+			else
+				return false;
+
+		case 3:
+			if (room->westRoom != NULL&&room->westRoom->isVisit == 0)
+				return true;
+			else
+				return false;
+
+		default:
+			return false;
+	}
+}
+
+void carve(Room* room, int direction) {//여기서 room도 해당 위치로 바꿔야함. 이미 checkDirection으로 검증된 값만 들어오기 때문에 따로 포인터에 대한 NULL체크는 하지 않음.
+	switch (direction)
+	{
+		case 0:
+			room->roomMap[0][1] = 0;
+			room->northRoom->roomMap[2][1] = 0;
+			room = room->northRoom;
+			break;
+		case 1:
+			room->roomMap[1][2] = 0;
+			room->eastRoom->roomMap[1][0] = 0;
+			room = room->eastRoom;
+			break;
+		case 2:
+			room->roomMap[2][1] = 0;
+			room->southRoom->roomMap[0][1] = 0;
+			room = room->southRoom;
+			break;
+		case 3:
+			room->roomMap[1][0] = 0;
+			room->westRoom->roomMap[1][2] = 0;
+			room = room->westRoom;
+			break;
+		default:
+			break;
+	}
+}
+
+void changeMaze(Maze* maze) {
+
+	Room* temp;
+	
+	for (int i = 0; i < maze->size; ++i) {
+		for (int j = 0; j < maze->size; ++j) {
+			temp = maze->roomArray + i*maze->size + j;
+			temp->isVisit = 0;
+		}
+	}
+
+	int nowX=rand()%maze->size, nowY=rand()%maze->size;
+	int direction;
+
+	temp = maze->roomArray + nowX*maze->size + nowY;
+
+	while (temp != NULL) {
+		temp->isVisit = 1;
+		*(maze->visitTable + temp->roomX*maze->size + temp->roomY) = 1;
+		direction = rand() % 4;
+		if (checkDirection(temp, direction))
+			carve(temp, direction);
+		else {
+
+		}
+	}
+}
+
+Room* findUnVisit(Maze* maze) {
+	int x, y;
+	Room* temp;
+	do {
+		x = rand() % maze->size;
+		y = rand() % maze->size;
+		temp = maze->roomArray + maze->size*x + y;
+		
+		if (temp->isVisit == 1)
+			continue;
+	} while (true);
+}
+
+void main() {
+	srand((unsigned int)time(NULL));
+	Maze* maze = makeEmptyMaze(5);
+	changeMaze(maze);
+	printMap(maze);
+}
